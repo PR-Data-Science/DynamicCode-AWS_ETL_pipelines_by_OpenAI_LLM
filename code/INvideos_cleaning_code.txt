@@ -1,0 +1,26 @@
+import pandas as pd
+import numpy as np
+
+def clean_youtube_data(df):
+    # Remove duplicates
+    df.drop_duplicates(inplace=True)
+
+    # Standardize publish_time to ISO 8601 format and convert to datetime
+    df['publish_time'] = pd.to_datetime(df['publish_time'], errors='coerce').dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+    # Ensure numeric columns are non-negative
+    numeric_cols = ['views', 'likes', 'dislikes', 'comment_count']
+    df[numeric_cols] = df[numeric_cols].clip(lower=0)
+
+    # Normalize tags by removing special characters and replacing NaN with 'No Tags'
+    df['tags'] = df['tags'].str.replace(r'[^a-zA-Z0-9\s]', '', regex=True).str.strip().fillna('No Tags')
+
+    # Standardize string columns (title, description) by stripping whitespace
+    df['title'] = df['title'].str.strip()
+    df['description'] = df['description'].str.strip()
+    
+    # Handle missing values in description by replacing NaN with an empty string
+    df['description'].fillna('', inplace=True)
+
+    # Return the cleaned DataFrame
+    return df
