@@ -1,4 +1,4 @@
-from src.utils.openai_utils import call_openai_with_system_user_prompt
+from src.utils.openai_utils import call_openai_with_system_user_prompt, clean_openai_code_response
 from src.utils.file_utils import save_cleaning_code_to_file
 from src.extraction.s3_extraction import read_csv_from_s3
 from config.config import S3_BUCKET
@@ -6,17 +6,17 @@ from config.constants import RAW_FOLDER, CLEANED_FOLDER
 import pandas as pd
 import io
 
-def clean_openai_code_response(response_text):
-    """Remove markdown-like ```python and ``` from LLM code blocks."""
+# def clean_openai_code_response(response_text):
+#     """Remove markdown-like ```python and ``` from LLM code blocks."""
 
-    if response_text is None:
-        raise ValueError("Received no cleaning code from OpenAI.")
+#     if response_text is None:
+#         raise ValueError("Received no cleaning code from OpenAI.")
     
-    if response_text.startswith("```"):
-        response_text = response_text.split("\n", 1)[1]
-    if response_text.endswith("```"):
-        response_text = response_text.rsplit("\n", 1)[0]
-    return response_text
+#     if response_text.startswith("```"):
+#         response_text = response_text.split("\n", 1)[1]
+#     if response_text.endswith("```"):
+#         response_text = response_text.rsplit("\n", 1)[0]
+#     return response_text
 
 def execute_cleaning_code(df, cleaning_code):
     globals_dict = {"pd": pd, "df": df}
