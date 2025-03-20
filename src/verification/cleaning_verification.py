@@ -3,7 +3,7 @@ import os
 from config.constants import RAW_FOLDER_NAME, CLEANED_FOLDER_NAME
 from src.extraction.s3_extraction_pyspark import read_s3_file_pyspark, get_spark_session
 from src.utils.openai_utils import call_openai_with_system_user_prompt, clean_openai_code_response
-from src.utils.file_utils import save_cleaning_code_to_file
+from src.utils.file_utils import save_cleaning_code_to_file, save_verification_code_to_file
 
 # Initialize Spark session
 spark = get_spark_session()
@@ -35,18 +35,19 @@ def generate_pyspark_verification_prompt(video_data_filename, df):
     - ✅ Numeric columns (`views, likes, dislikes, comment_count`) must be **non-negative**.
     - ✅ Duplicate rows were removed.
     - ✅ `tags` column was **normalized (no special characters)**.
-    - ✅ `category_id` must be **valid and mapped to `category_name`**.
     - ✅ Strings (`title`, `channel_title`, `description`) must have **no leading/trailing spaces**.
     - ✅ Missing `tags` should be replaced with `"No Tags"`.
     - ✅ Missing `description` should be replaced with an empty string (`""`).
 
     ### Expected Output
     - Generate a **PySpark script** to verify if all these transformations were successfully applied.
+    - The script must output `print()` statements indicating whether each column meets the expected cleaning criteria.
     - For each column, print statements such as:
         - `"✅ Timestamp format is correct"` or `"❌ Timestamps have incorrect formats"`
         - `"✅ No negative values found"` or `"❌ Some numeric values are negative"`
     - The script must use **PySpark DataFrame API** (not pandas).
-    - The script must have all the print statements while executing the code.
+    - **DO NOT create a new Spark session**. Use the existing `spark` session and the provided `df` DataFrame.
+    - **DO NOT use `spark.read`**. All operations should be performed on the `df` variable.
     - **Return only the PySpark code**, no explanations.
     """
 
@@ -95,7 +96,7 @@ def run_cleaning_verification_pipeline(video_data_filename):
 
     pyspark_code = clean_openai_code_response(pyspark_code_with_markdown)
     # Save verification code for auditing
-    save_cleaning_code_to_file(pyspark_code, video_data_filename.replace('.csv', '_verification.txt'))
+    save_verification_code_to_file(pyspark_code, video_data_filename.replace('.csv', '_verification_code.py'))
 
     print("pyspark verification code starts here:")
     print(pyspark_code)
